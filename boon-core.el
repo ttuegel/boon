@@ -368,6 +368,14 @@ the buffer changes."
                   boon-toggle-character-case
                   boon-toggle-case))))
 
+(defvar boon-inhibit-reset-state-for-switchw nil
+  "When set, do not reset the Boon state when switching windows.")
+
+(defun boon-inhibit-reset-state-for-switchw (orig-fn &rest orig-args)
+  "Stop `boon-reset-state-for-switchw' from resetting the buffer state around ORIG-FN."
+  (let ((boon-inhibit-reset-state-for-switchw t))
+    (apply orig-fn orig-args)))
+
 ;; When switching away from a window (for example by clicking in another
 ;; window), return the buffer hosting it to its "natural" state (otherwise it's
 ;; surprising to the user when coming back to it).
@@ -380,7 +388,8 @@ the buffer changes."
     ;; Reset the Boon state unless:
     ;; - The new frame is a child of the old frame. Child frames are typically
     ;;   used as transient popups, e.g. to display completion candidates.
-    (when (not (frame-ancestor-p old-frame frame-or-window))
+    (when (and (not (frame-ancestor-p old-frame frame-or-window))
+               (not boon-inhibit-reset-state-for-switchw))
       (with-current-buffer old-buffer
         (boon-set-natural-state)))))
 
