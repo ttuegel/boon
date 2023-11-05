@@ -375,9 +375,14 @@ the buffer changes."
   "Reset the boon state to natural when switching windows."
   (-when-let* ((old-frame-or-window (old-selected-window))  ; `old-selected-window' sometimes (surprisingly) returns a frame.
                (old-window (and (windowp old-frame-or-window) old-frame-or-window))
-               (old-buffer (window-buffer old-window)))
-    (with-current-buffer old-buffer
-      (boon-set-natural-state))))
+               (old-buffer (window-buffer old-window))
+               (old-frame (old-selected-frame)))
+    ;; Reset the Boon state unless:
+    ;; - The new frame is a child of the old frame. Child frames are typically
+    ;;   used as transient popups, e.g. to display completion candidates.
+    (when (not (frame-ancestor-p old-frame frame-or-window))
+      (with-current-buffer old-buffer
+        (boon-set-natural-state)))))
 
 (add-hook 'window-selection-change-functions #'boon-reset-state-for-switchw)
 
