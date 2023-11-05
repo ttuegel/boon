@@ -395,6 +395,11 @@ the buffer changes."
 
 (add-hook 'window-selection-change-functions #'boon-reset-state-for-switchw)
 
+(with-eval-after-load 'org
+  (advice-add 'org-read-date :around #'boon-inhibit-reset-state-for-switchw)
+  (advice-add 'org-fast-todo-selection :around #'boon-inhibit-reset-state-for-switchw)
+  (advice-add 'org-fast-tag-selection :around #'boon-inhibit-reset-state-for-switchw))
+
 (defadvice isearch-exit (after boon-isearch-set-search activate compile)
   "After isearch, highlight the search term."
   (boon-hl-regexp (if isearch-regexp isearch-string (regexp-quote isearch-string))))
